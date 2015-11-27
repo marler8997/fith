@@ -1,0 +1,113 @@
+
+
+Start gforth with some files
+  gforth file1.fs file2.fs ...
+If an error occurs, gforth terminates
+
+Use -e bye on the command line to exit forth after running the files
+  gforth file1.fs -e bye
+
+This can be used for easy testing
+  gforth file1.fs test.fs -e bye
+
+
+
+Comments
+\ Comment until end of line
+( Comment until )
+Note: It's a good idea to avoid ')' in word names because this can mess up the comments
+
+
+Printing
+
+.s              ( -- )          Print the stack
+.               (cell -- )      Print and drop the top of the stack
+
+Stack Manipulation
+drop   (cell -- )
+dup    (cell -- cell cell)
+over   (c1 c2 -- c1 c2 c1)
+swap   (c1 c2 -- c2 c1)
+rot    (c1 c2 c3 -- c2 c3 c1)
+tuck   (c1 c2 c3 -- c3 c1 c2)  Opposite of rot
+nip    (c1 c2 -- c2)
+
+2drop  (cell cell -- )
+2dup   (c1 c2 -- c1 c2 c1 c2)
+2swap  (c1 c2 c3 c4-- c3 c4 c1 c2)
+
+
+Math
++, -, *, /, mod (a b -- a<op>b)  Perform the given binary operation
+
+
+Strings
+s" <string>   Create the string and push the pointer on the stack
+
+
+File Inlcusion
+included (char* -- )    Include the file pushed on the stack
+
+Decompile
+see <word>
+
+Defining Word
+:     Start word definition
+;     End word definition
+
+Boolean Operations
+on    (a-addr -- )     Set the value pointed to by a-addr to true
+off   (a-addr -- )     Set the value pointed to by a-addr to false
+
+Standard Constants
+true   (cell with all bits set)
+false  (cell with all bits clear)
+
+
+
+
+WordOverload Prefixes
+(none) signed integer
+u      unsigned integer
+c      character
+d      signed double-cell integer
+ud, du unsigned double-cell integer
+2      two cells (not-necessarily double-cell numbers)
+m, um  mixed sing-cell and double-cell operations
+f      floating point (note that stack notation for 'f' is boolean and 'r' is floating point)
+
+Note: if there is no differences between the signed and unsigned variant (ie for '+') there is only the prefix-less variant
+
+
+Stack Notation
+n   signed integer (cell sized)
+u   unsigned integer (cell sized)
+c   character
+f   boolean (cell sized)
+
+w,x cell (can contain integer or address)
+xt  execution token (same size as cell)
+
+d   signed double-cell integer
+ud  unsigned double-cell integer
+
+r   float (on the fp stack)
+a-addr, a-
+    cell-alignd address
+c-addr, c-
+    char-aligned address
+f-  float aligned address
+df- address aligned for IEEE double precision float
+sf- address aligned for IEEE single preceision float
+
+wid Word list ID (same size as cell)
+ior, wior
+    IO result code (cell sized).  In Gforth you can throw iors
+f83name
+    Pointer to name structure
+"   String in the input stream (not on the stack)
+
+There are more here: http://www.complang.tuwien.ac.at/forth/gforth/Docs-html/Notation.html
+
+
+

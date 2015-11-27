@@ -1,0 +1,422 @@
+
+------------------------------------------------
+Word Case Sensitivity
+------------------------------------------------
+1) UPPERCASEONLY or lowercaseonly
+   a) word separation?
+      TESTMULTIWORD   / testmultiword   ? (hard to read)
+      TEST.MULTI.WORD / test.multi.word ? (easy to type, looks ok, can be confused with the print word '.' )
+      TEST-MULTI-WORD / test-multi-word ? (medium to type)
+      TEST_MULTI_WORD / test_multi_word ? (harder to type, looks nice)
+
+2) CamelCaseOnly
+   a) No word separation issues (TestMultiWord)
+   b) Adds extra keystrokes for little words (Mod vs mod)
+
+3) pascalCaseOnly
+   a) No word separation issues (testMultiWord)
+   b) looks weird in some cases
+
+4) CaseInSensItivE
+   a) sacrifices consistency, each project will have it's own conventions
+
+------------------------------------------------
+CurrentWinner: pascalCaseOnly
+------------------------------------------------
+
+
+
+------------------------------------------------
+Colon ':' vs def
+------------------------------------------------
+Special symbols should only be used in certain cases.
+Here's some of the criteria that would be in favor of using a special symbol:
+1) Used Often?
+2) Used in the middle of other contexts?
+3) Does the saving of space result in more readable code?
+
+I don't think the start of a word definition fits this criteria.  There's probably
+better places to use a colon.  So for this language, we use the 'def' word.
+
+def ... ;
+OR MAYBE
+def { ... }
+OR MABYE
+def{ ... }
+OR MABYE
+def{ ... }def
+
+
+
+------------------------------------------------
+Namespace
+------------------------------------------------
+Be sure to remember to consider namespaces.
+
+Maybe something similar to the C# approach.
+
+Each file could be treated as a new instance of fith.
+
+It specifies it's dependencies and provides a list of namespace usings.
+
+include std
+include stdPrint
+
+
+using std
+
+
+
+
+Maybe we should have a 'def' attribute that indicates the word is meant
+to be apart of the public api?
+[api] def ?
+
+There's no need to have a keyword meant to mark something as private.
+We don't care about protecting our code from malicious attackers, we just want
+to help direct any users as to where the useful high level functions are.
+
+------------------------------------------------
+Types
+------------------------------------------------
+Each forth will have it's own platform defined types.
+signed/unsigned (the forths' default stack sized variable)
+
+
+u64, u32, u16, u8 (unsigned types of bit length n)
+s64, s32, s16, s8 (signed types of bit length n
+OR
+u8, u4, u2, u1 (unsigned types of byte length n)
+s8, s4, s2, s1 (signed types of byte length n)
+
+------------------------------------------------
+Words and Special Symbols
+------------------------------------------------
+In the fith language, I may make the tokenizer a little smarter.
+I might limit words to start with letters and only contain certain characters.
+That way special symbols can be used adjacent to words.
+I think this would be more readable.
+a;
+a ;
+Would now mean the same thing.
+
+
+------------------------------------------------
+Parameter Stack Management
+------------------------------------------------
+For most words, they will always do the same thing with the stack.
+For these words, I think there should be a well-defined syntax for defining
+what the word will do with the stack, and there should be a compiler that analyzes
+the code to make sure it always follow this convention.
+I don't want to define the syntax until more of the langauge is setup.
+
+For the other cases, the word could potentially leave the stack in a different state
+depending on the state of the program, they can omit this stack definition.
+These words should be well tested.
+Because of this, instead of including the stack definition, they should probably include
+a special word that can be grepped for in a set of code to look for these function to make
+sure they are tested.
+
+
+------------------------------------------------
+Unit Testing
+------------------------------------------------
+Note: Should be able to include unit tests after a word definition.
+Maybe surround test code in
+:test ... test;
+
+
+------------------------------------------------
+Control Flow
+------------------------------------------------
+if or -if
+else
+endif
+
+while or -while
+break
+endWhile
+
+do
+break
+endDo
+
+
+OR (The open curly brace '{' doesn't do anything)
+---
+if { or -if {
+}else{
+}
+
+while { or -while {
+break
+}
+
+do {
+break
+}
+
+IF we used this, we could use the braces for 'def' as well
+
+def {
+}
+
+or maybe 
+if{ ... }if
+while{ ... }while
+do{ ... }do
+
+or maybe
+if{ ... }
+while{ ... }
+do{ ... }
+
+
+There should probaly be a word to leave an if clause:
+    if ... endif
+    OR
+    if ... breakif
+    OR
+    if ... exit
+    
+
+Idea: Maybe there should be a DOUBLE mode word.
+Maybe this would make all SINGLE word equivalent code use
+the double word versions?
+
+
+
+------------------------------------------------
+Fith Primitives (Version 2)
+------------------------------------------------
+http://www.retroprogramming.com/2012/03/itsy-forth-1k-tiny-compiler.html
+Reference Web Site: http://www.retroprogramming.com/2012/04/itsy-forth-primitives.html
+
+
+NoDropVariant
+------------------
+Many words remove values from the stack.  Sometimes it may be worth it to have a variation
+of the word that does not remove the contents of the stack.  Here's the criteria to determine
+if this variant should exist.
+
+    Criteria 1) If the variant will be exactly the same except with an extra add a "drop" at the end, it's should probably not have the NoDropVariant
+    Criteria 2) If the implementation ends with a "drop", it should probably have the NoDropVariant
+
+Note: On criteria 2, in some cases this may be a good reason to only have the NoDropVariant.
+Note: I could also call this the "HoldVariant" and the operation could be named <op>-hold
+    
+Stack Notation
+---------------
+addr     - A variable large enough to hold an address
+c | cell - Standard cell size for the stack
+
+
+BitMode
+---------------
+You should be able to change bit modes.
+bit-mode 8 ( -- )     Changes cell bit length to 8
+bit-mode 16 ( -- )    Changes cell bit length to 16
+bit-mode 32 ( -- )    Changes cell bit length to 32
+bit-mode 64 ( -- )    Changes cell bit length to 64
+
+
+Primitives
+---------------
+print-stack ( -- )    Print the stack contents
+ForhName: .S
+
+print  (cell -- )     Print and drop the top of the stack
+ForthName: .
+TypeVariations
+  print-u
+  print-u8
+  print-u16
+  print-u32
+  print-u64
+  print-s (this is the default)
+  print-s8
+  print-s16
+  print-s32
+  print-s64
+NoDropVariation: Yes (Criteria 2)
+
+
+deref (addr -- cell)  Replace addr on the stack with it's dereferenced value
+ForthName: @
+TypeVariations
+  deref-cell8
+  deref-cell16
+  deref-cell32
+  deref-cell64
+NoDropVariation: No (Criteria 1)
+
+store  (cell addr --  )  Store cell at addr
+ForthName: !
+TypeVariations
+  store-cell8
+  store-cell16
+  store-cell32
+  store-cell64
+StackAddVaration: Yes (Criteria 2)
+nodrop-store (cell addr -- cell)  Store value x at addr (leave cell on the stack)
+TypeVariations
+  nodrop-store-cell8
+  nodrop-store-cell16
+  nodrop-store-cell32
+  nodrop-store-cell64
+
+drop  (cell -- )             Remove cell from the stack
+2drop (cell cell -- )        Remove 2 cells from the stack
+3drop (cell cell cell -- )   Remove 3 cells from the stack
+
+dup   (cell -- cell cell)    Add a copy of cell to the top of the stack
+dup2  (c1 c2 -- c1 c2 c1 c2) Add a copy of the first 2 cells to the top of the stack
+dup3  (c1 c2 c3 -- c1 c2 c3 c1 c2 c3) Add a copy of the first 3 cells to the top of the stack
+
+swap  (c1 c2 -- c2 c1)       Swap the top 2 cells on the stack
+rot   (c1 c2 c3 - c2 c3 c1)  Rotate the top 3 cells (move cell 3 from the top to the top)
+
+0branch (cell -- )           Jump if cell is 0 (destination address is compiled in the cell after the branch)
+branch  ( -- )               Unconditional jump (destination address is compiled in the cell after the branch)
+call    (addr -- )           Call word at addr
+exit    ( -- )               Return from the current word
+
+
+add (c1 c2 -- c1+c2)
+
+
+on    (addr -- )     Set the value pointed to by addr to true
+TypeVariations: Sized (not signed)
+StackAddVariation: Yes (Criteria 2)
+
+off   (addr -- )     Set the value pointed to by addr to false
+TypeVariations: Sized (not signed)
+StackAddVariation: Yes (Criteria 2)
+
+
+
+
+
+
+
+
+------------------------------------------------
+My history with Forth & stack machines
+http://yosefk.com/blog/my-history-with-forth-stack-machines.html
+------------------------------------------------
+
+Condition Primitives written in FORTH
+---------------------------------------------
+: (   41 word drop ; immediate
+( That was the definition for the comment word. )
+( Now we can add comments to what we are doing! )
+: IF     ( -- f orig )  ?comp compile 0branch  conditional_key >mark     ; immediate
+: THEN   ( f orig -- )  swap ?condition  >resolve   ; immediate
+: BEGIN  ( -- f dest )  ?comp conditional_key <mark   ; immediate
+: AGAIN  ( f dest -- )  compile branch  swap ?condition  <resolve  ; immediate
+: UNTIL  ( f dest -- )  compile 0branch swap ?condition  <resolve  ; immediate
+: AHEAD  ( -- f orig )  compile branch   conditional_key >mark     ; immediate
+
+Conditional primitives?! Looks like conditional primitives aren't – they define them here.
+This COMPILE BRANCH business modifies the code of a function that uses IF or THEN, at compile time.
+THEN – one part of the conditional – writes (RESOLVEs) a branch offset to a point in code saved (MARKed) by IF, the other part of the conditional.
+
+
+
+
+
+A Forth interpreter keeps an instruction pointer into this array (ip), a data stack (ds), and a return stack (rs), and does this:
+
+while(true) {
+ switch(*ip) {
+  //arithmetics (+,-,*...):
+  case PLUS: ds.push(ds.pop() + ds.pop()); ++ip;
+  //stack manipulation (drop,swap,rot...):
+  case DROP: ds.pop(); ++ip;
+  //literal numbers (1,2,3...):
+  case LITERAL: ds.push(ip[1]); ip+=2;
+  //control flow:
+  case COND_BRANCH: if(!ds.pop()) ip+=ip[1]; else ip+=2;
+  case RETURN: ip = rs.pop();
+  //user-defined words: save return address & jump
+  default: rs.push(ip+1); ip = *ip;
+ }
+}
+
+
+: DRAW-RECTANGLE 2DUP UP RIGHT DOWN LEFT ;
+
+simply appends {&2dup,&up,&right,&down,&left,RETURN} to the code array.
+Very straightforward. There are no parameters or declaration/expression syntax as in…
+
+
+
+
+
+
+------------------------------------------------
+
+
+
+
+
+
+
+------------------------------------------------
+My Forth Primitives (Version 1)
+------------------------------------------------
+
+Word           Stack           Description
+                
+.              (n -- )         Print signed
+=.             (n -- n)        Print signed (don't remove from the stack)
+                
+                
+.s             ( -- )          Print the stack
+
+
+Looping
+exit           ( -- )          Exit the current word
+
+Recursion
+recurse        ( -- )          Call the word currently being defined
+
+The Return Stack
+ >r            (n -- )         Takes parameter off the parameter stack and pushes it onto the return stack.
+=>r            (n -- n)        Copies parameter from top of parameter stack to the return stack.
+ r>            ( -- n)         Takes parameter off return stack and pushes it onto the parameter stack.
+=r>            ( -- n)         Copies parameter from top of return stack to the parameter stack
+
+
+Language
+word           (n -- n)        Read source bytes until ascii character n, pointer to the chars is left on the stack
+
+
+
+
+
+
+
+
+Memory
+!              (n a -- )       Store the value n to memory pointed to by a
+@              (a -- n)        Replace the address on the top of the stack with the value it points to (no need for =@ because you can just call dup before)
+
+
+Variables
+variable X                     Creates a variable X
+x                              Push address of X onto the stack (not the value)
+5 X !                          Set value of X to 5
+X @                            Pushes value of X to the stack
+create X 20 cells allot        Allocate 20 cells of memory and store starting address to X
+
+Floating Point (Use scientific notation)
+1e
+
+
+Stack Manipulation
+
+drop 2drop 3drop 4drop
+udrop, =udrop
+
+
